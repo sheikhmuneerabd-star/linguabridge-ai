@@ -1,0 +1,16 @@
+{
+  "name": "linguabridge",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @linguabridge/shared",
+    "dev:shared": "npm run dev -w @linguabridge/shared"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
