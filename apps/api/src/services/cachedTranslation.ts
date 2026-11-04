@@ -11,7 +11,7 @@ import { translateIncoming, translateOutgoing } from "./translation";
 import { assertUnderDailyLimit, recordUsage } from "./usage";
 
 // Bump this whenever the translation prompts change, so old cached answers are not reused.
-const PROMPT_VERSION = 1;
+const PROMPT_VERSION = 4;
 
 const ttlMs = env.CACHE_TTL_MINUTES * 60_000;
 const incomingCache = new TTLCache<TranslateIncomingResponse>(env.CACHE_MAX_ENTRIES, ttlMs);

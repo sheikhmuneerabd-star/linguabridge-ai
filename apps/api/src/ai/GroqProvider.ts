@@ -89,7 +89,7 @@ export class GroqProvider implements AIProvider {
       const detail = await res
         .clone()
         .json()
-        .then((d: GroqResponse) => d.error?.message)
+        .then((d) => (d as GroqResponse).error?.message)
         .catch(() => undefined);
 
       if (res.status === 429) {

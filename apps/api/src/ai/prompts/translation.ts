@@ -3,7 +3,7 @@ import { getLanguageName, type Tone } from "@linguabridge/shared";
 /** Describes a language so the AI knows exactly what style/script we want. */
 export function describeLanguage(code: string): string {
   if (code === "ur-Latn") {
-    return 'Roman Urdu (Urdu written in Latin letters, natural everyday Pakistani chat style, for example "Mujhe website chahiye")';
+    return 'Roman Urdu (Urdu written in Latin letters, natural everyday Pakistani chat style, for example "Mujhe website chahiye"). Use Urdu words, not Hindi/Sanskrit ones: say "meherbani" not "kripya", "shukriya" not "dhanyavaad", "dukaan" not "dukan"';
   }
   if (code === "ur") return "Urdu (written in Arabic/Nastaliq script)";
   return getLanguageName(code);
@@ -35,10 +35,11 @@ Do two things:
 ${LANG_CODE_RULES}
 
 Rules:
-- Translate faithfully. Do not add, remove, summarize or explain anything.
+- Translate greetings neutrally. "Hello", "Hi", "Hola", "Bonjour", "你好", "Merhaba", "مرحبا" (marhaba), "नमस्ते" (namaste), "Здравствуйте" all become "Hello" or "Hi". NEVER write "Assalam o Alaikum" unless the original text itself says "As-salamu alaykum", "السلام عليكم" or "Assalam o Alaikum".
 - Keep names, numbers, prices, links, emojis, code and line breaks exactly as they are.
 - Keep the sender's tone.
-- If the text is already in the target language, return it unchanged.
+- If the text is in a DIFFERENT language than the target, you MUST translate every sentence, even if it is very short (like "Thanks!") or a long list. Never return the original text unchanged in that case.
+- Only if the text is already in the target language, return it unchanged.
 
 Reply with JSON only: {"detectedLang": "<code>", "translation": "<translated text>"}`;
 }

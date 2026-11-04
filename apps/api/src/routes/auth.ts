@@ -11,15 +11,16 @@ import { asyncHandler } from "../utils/asyncHandler";
 export const authRouter = Router();
 
 function toAuthResponse(user: {
-  id: string;
+  _id: { toString(): string };
   email: string;
   name: string;
   picture?: string | null;
 }): AuthResponse {
+  const id = user._id.toString();
   return {
-    token: signToken(user.id),
+    token: signToken(id),
     user: {
-      id: user.id,
+      id,
       email: user.email,
       name: user.name,
       picture: user.picture ?? undefined,
