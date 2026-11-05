@@ -9,6 +9,8 @@ export interface GoogleProfile {
   email: string;
   name: string;
   picture?: string;
+  /** Present when the sign-in flow used a nonce (the extension does). */
+  nonce?: string;
 }
 
 export async function verifyGoogleIdToken(idToken: string): Promise<GoogleProfile> {
@@ -28,6 +30,7 @@ export async function verifyGoogleIdToken(idToken: string): Promise<GoogleProfil
       email: p.email,
       name: p.name ?? p.email.split("@")[0],
       picture: p.picture,
+      nonce: p.nonce,
     };
   } catch {
     throw new AppError(401, "INVALID_GOOGLE_TOKEN", "Google sign-in failed. Please try again.");

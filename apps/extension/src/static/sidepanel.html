@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinguaBridge AI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="panel">
+    <h1>LinguaBridge AI</h1>
+
+    <p id="loading" class="muted">Loading...</p>
+
+    <section id="signedOut" class="card" hidden>
+      <p>You are not signed in.</p>
+      <p id="message" class="muted">Click the LinguaBridge icon in the Chrome toolbar to sign in.</p>
+    </section>
+
+    <section id="signedIn" class="card" hidden>
+      <p>Signed in as <strong id="userName"></strong></p>
+      <p id="userEmail" class="muted"></p>
+      <p id="prefsLine" class="muted"></p>
+      <p id="setupNote" class="muted" hidden>Please finish setup: click the LinguaBridge icon in the toolbar.</p>
+    </section>
+
+    <section id="tools" class="card" hidden>
+      <h2>Translate a client message</h2>
+      <p class="muted">Text you enter here is sent to our server for translation.</p>
+      <label for="inText">Paste the message</label>
+      <textarea id="inText" class="input" rows="3" maxlength="4000"></textarea>
+      <button id="inBtn" class="primary">Translate to my language</button>
+      <p id="inStatus" class="muted" hidden></p>
+      <p id="inOut" class="result" hidden></p>
+
+      <h2 class="spaced">Translate my reply</h2>
+      <label for="outLang">Client's language</label>
+      <select id="outLang"></select>
+      <label for="outText">Write your reply</label>
+      <textarea id="outText" class="input" rows="3" maxlength="4000"></textarea>
+      <p id="outStatus" class="muted" hidden></p>
+      <p id="outOut" class="result" hidden></p>
+      <button id="outCopy" hidden>Copy translation</button>
+    </section>
+
+    <section class="card">
+      <h2>Fiverr check</h2>
+      <p class="muted">
+        Open a Fiverr chat, then press the button. The report shows the page structure only. It does not contain
+        any message text.
+      </p>
+      <button id="diagnoseBtn">Check Fiverr page</button>
+      <p id="diagStatus" class="muted" hidden></p>
+      <textarea id="diagOut" class="report" rows="12" readonly hidden></textarea>
+      <button id="copyDiag" hidden>Copy report</button>
+    </section>
+
+    <footer>
+      <span id="dot" class="dot" aria-hidden="true"></span>
+      <span id="serverText" class="muted">Checking server...</span>
+    </footer>
+
+    <script src="sidepanel.js"></script>
+  </body>
+</html>

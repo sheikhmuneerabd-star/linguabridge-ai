@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "LinguaBridge AI",
+  "version": "0.1.0",
+  "description": "Understand client messages and reply with confidence, in your own language.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "sidePanel", "identity"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "LinguaBridge AI",
+    "default_popup": "popup.html"
+  },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.fiverr.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

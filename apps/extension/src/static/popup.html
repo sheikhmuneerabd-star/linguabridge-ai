@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinguaBridge AI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="popup">
+    <h1>LinguaBridge AI</h1>
+
+    <p id="loading" class="muted">Loading...</p>
+
+    <!-- Not signed in -->
+    <section id="signedOut" hidden>
+      <button id="googleBtn" type="button" class="primary">Continue with Google</button>
+      <p id="googleHint" class="muted" hidden>
+        Finish in the Google window. If this popup closes, just open it again.
+      </p>
+
+      <div class="divider">or use email</div>
+
+      <form id="authForm">
+        <div id="nameRow" hidden>
+          <label for="name">Your name</label>
+          <input id="name" maxlength="80" autocomplete="name" />
+        </div>
+
+        <label for="email">Email</label>
+        <input id="email" type="email" required autocomplete="email" />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" required maxlength="72" autocomplete="current-password" />
+        <label class="check"><input id="showPassword" type="checkbox" /> Show password</label>
+
+        <p id="authError" class="error" role="alert" hidden></p>
+
+        <button id="submitBtn" type="submit" class="primary">Sign in</button>
+
+        <p class="muted">
+          <span id="modeText">New here?</span>
+          <button id="toggleMode" type="button" class="link">Create an account</button>
+        </p>
+      </form>
+    </section>
+
+    <!-- First-time setup, and "Change settings" -->
+    <section id="setup" hidden>
+      <h2 id="setupTitle">Welcome! Choose your languages</h2>
+      <p id="setupSub" class="muted">You only do this once. You can change it anytime.</p>
+
+      <form id="setupForm">
+        <label for="displayLang">I want to read messages in</label>
+        <select id="displayLang"></select>
+
+        <label for="writingLang">I will write my replies in</label>
+        <select id="writingLang"></select>
+
+        <label for="tone">My communication style</label>
+        <select id="tone"></select>
+
+        <p id="setupError" class="error" role="alert" hidden></p>
+
+        <button id="saveSetup" type="submit" class="primary">Save and continue</button>
+        <button id="cancelSetup" type="button" hidden>Cancel</button>
+      </form>
+    </section>
+
+    <!-- Signed in and set up -->
+    <section id="signedIn" hidden>
+      <div class="user">
+        <strong id="userName"></strong>
+        <span id="userEmail" class="muted"></span>
+      </div>
+
+      <dl class="summary">
+        <div><dt>Read in</dt><dd id="sumDisplay"></dd></div>
+        <div><dt>Write in</dt><dd id="sumWriting"></dd></div>
+        <div><dt>Style</dt><dd id="sumTone"></dd></div>
+      </dl>
+
+      <button id="openPanel" class="primary">Open assistant panel</button>
+      <button id="changeSettings">Change settings</button>
+      <button id="signOut">Sign out</button>
+    </section>
+
+    <footer>
+      <span id="dot" class="dot" aria-hidden="true"></span>
+      <span id="serverText" class="muted">Checking server...</span>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
