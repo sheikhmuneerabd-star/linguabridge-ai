@@ -10,6 +10,18 @@ export interface Snapshot {
 const DEBOUNCE_MS = 300;
 const URL_POLL_MS = 500;
 
+/** Gives every page element a number, so we notice when the page re-creates a message. */
+const elementIds = new WeakMap<Element, number>();
+let nextElementId = 1;
+function elementId(el: Element): number {
+  let id = elementIds.get(el);
+  if (id === undefined) {
+    id = nextElementId++;
+    elementIds.set(el, id);
+  }
+  return id;
+}
+
 function isOurs(node: Node | null): boolean {
   const el = node instanceof Element ? node : node?.parentElement;
   return !!el?.closest("[data-lb]");
@@ -79,12 +91,16 @@ export class ChatWatcher {
   private scan(): void {
     try {
       const isChat = this.adapter.isChatPage();
-      const messages = isChat ? this.adapter.getMessages() : [];
+      const messages: ChatMessage[] = isChat ? this.adapter.getMessages() : [];
       const conversationId = isChat ? this.adapter.getConversationId() : null;
       const hasInput = isChat && this.adapter.getInputElement() !== null;
 
-      // Only report when something really changed.
-      const key = [conversationId ?? "-", hasInput, ...messages.map((m) => m.id)].join("|");
+      // Only report when something really changed (including a message element being re-created).
+      const key = [
+        conversationId ?? "-",
+        hasInput,
+        ...messages.map((m) => `${m.id}@${elementId(m.element)}`),
+      ].join("|");
       if (key === this.lastKey) return;
       this.lastKey = key;
 

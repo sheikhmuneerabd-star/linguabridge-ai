@@ -2,6 +2,7 @@ import type { TabReply, TabRequest } from "../shared/messages";
 import { findAdapter } from "./adapters";
 import { ChatWatcher, type Snapshot } from "./core/watcher";
 import type { PlatformAdapter } from "./core/types";
+import { IncomingTranslator } from "./inline/incoming";
 
 function logSnapshot(adapter: PlatformAdapter, s: Snapshot): void {
   if (!s.isChat) {
@@ -20,8 +21,14 @@ function logSnapshot(adapter: PlatformAdapter, s: Snapshot): void {
 const adapter = findAdapter(new URL(location.href));
 
 if (adapter) {
-  // Read-only for now: this step does not change anything on the page.
-  new ChatWatcher(adapter, (snapshot) => logSnapshot(adapter, snapshot)).start();
+  // Translation of client messages. It stays off until the user turns it on in the popup.
+  const incoming = new IncomingTranslator(adapter);
+  incoming.init();
+
+  new ChatWatcher(adapter, (snapshot) => {
+    logSnapshot(adapter, snapshot);
+    incoming.onSnapshot(snapshot);
+  }).start();
 
   chrome.runtime.onMessage.addListener((message: TabRequest, sender, sendResponse) => {
     if (sender.id !== chrome.runtime.id) return false;

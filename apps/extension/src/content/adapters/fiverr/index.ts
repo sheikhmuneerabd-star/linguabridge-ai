@@ -149,6 +149,28 @@ export class FiverrAdapter implements PlatformAdapter {
     return messages;
   }
 
+      mountInlineUI(message: ChatMessage, host: HTMLElement): void {
+      const part = message.element.querySelector<HTMLElement>(MESSAGE_PART);
+
+      // Fiverr lays out the children of ".message-content" side by side. Its first child is the
+      // text column (name/time on top, message text below), so we go one level deeper and add
+      // our box at the end of that column. That puts it under the text.
+      const column = part
+        ? Array.from(part.children).find((c): c is HTMLElement => c instanceof HTMLElement && !c.hasAttribute("data-lb"))
+        : undefined;
+
+      const parent = column ?? part;
+      if (parent) {
+        if (parent.lastElementChild !== host) parent.appendChild(host);
+        return;
+      }
+
+      // Fallback: right after the message block.
+      if (host.previousElementSibling !== message.element) {
+        message.element.insertAdjacentElement("afterend", host);
+      }
+    }
+
   diagnose(): string {
     return diagnoseFiverr(this);
   }

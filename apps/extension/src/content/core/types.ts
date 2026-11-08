@@ -22,6 +22,11 @@ export interface PlatformAdapter {
   getDraftText(): string;
   /** The part of the page to watch for changes. */
   getObserveRoot(): HTMLElement;
+  /**
+   * Puts our own box next to a message. Safe to call again and again:
+   * it does nothing if the box is already in the right place.
+   */
+  mountInlineUI(message: ChatMessage, host: HTMLElement): void;
   /** A text report about the page structure (never includes message text). */
   diagnose(): string;
 }
