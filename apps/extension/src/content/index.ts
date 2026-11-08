@@ -3,6 +3,7 @@ import { findAdapter } from "./adapters";
 import { ChatWatcher, type Snapshot } from "./core/watcher";
 import type { PlatformAdapter } from "./core/types";
 import { IncomingTranslator } from "./inline/incoming";
+import { OutgoingTranslator } from "./inline/outgoing";
 
 function logSnapshot(adapter: PlatformAdapter, s: Snapshot): void {
   if (!s.isChat) {
@@ -21,13 +22,17 @@ function logSnapshot(adapter: PlatformAdapter, s: Snapshot): void {
 const adapter = findAdapter(new URL(location.href));
 
 if (adapter) {
-  // Translation of client messages. It stays off until the user turns it on in the popup.
+  // Both features stay off until the user turns them on in the popup.
   const incoming = new IncomingTranslator(adapter);
   incoming.init();
+
+  const outgoing = new OutgoingTranslator(adapter, () => incoming.clientLanguage());
+  outgoing.init();
 
   new ChatWatcher(adapter, (snapshot) => {
     logSnapshot(adapter, snapshot);
     incoming.onSnapshot(snapshot);
+    outgoing.onSnapshot(snapshot);
   }).start();
 
   chrome.runtime.onMessage.addListener((message: TabRequest, sender, sendResponse) => {

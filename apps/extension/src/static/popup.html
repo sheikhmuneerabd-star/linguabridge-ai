@@ -79,13 +79,23 @@
         <div><dt>Style</dt><dd id="sumTone"></dd></div>
       </dl>
 
-      <div class="card compact">
+            <div class="card compact">
         <label class="check"><input id="autoOn" type="checkbox" /> <strong>Translate Fiverr messages</strong></label>
         <p class="muted small">
           When this is on, client messages in the Fiverr chat you have open are sent to the LinguaBridge server
           and to its AI provider (Groq) to be translated. They are not saved in our database, but the server
           keeps recent translations in memory for a few hours. This extension never sends anything to Fiverr or
           to your clients. Turn it off at any time.
+        </p>
+      </div>
+
+      <div class="card compact">
+        <label class="check"><input id="replyOn" type="checkbox" /> <strong>Translate my replies</strong></label>
+        <p class="muted small">
+          When this is on, the reply you type in the Fiverr message box is sent to the LinguaBridge server and
+          to Groq (AI) to be translated, a moment after you stop typing. This happens even if you never send the
+          message. The translation is only put in the box when you press Apply. This extension never presses
+          Send: you always send the message yourself.
         </p>
       </div>
 

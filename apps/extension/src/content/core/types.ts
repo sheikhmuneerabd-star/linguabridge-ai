@@ -27,6 +27,13 @@ export interface PlatformAdapter {
    * it does nothing if the box is already in the right place.
    */
   mountInlineUI(message: ChatMessage, host: HTMLElement): void;
+  /**
+   * Replaces the text in the message box. It never sends anything.
+   * Returns true if the box now holds the text.
+   */
+  setDraftText(text: string): boolean;
+  /** Puts our reply strip just above the message box. Safe to call again. */
+  mountDraftUI(host: HTMLElement): void;
   /** A text report about the page structure (never includes message text). */
   diagnose(): string;
 }

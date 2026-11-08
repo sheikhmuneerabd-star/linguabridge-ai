@@ -3,6 +3,8 @@ export const TOKEN_KEY = "lb_token";
 export const PREFS_TS_KEY = "lb_prefs_updated";
 /** true = the user turned on automatic translation of Fiverr messages. Off by default. */
 export const CONSENT_KEY = "lb_auto_translate_v1";
+/** true = the user turned on translation of the reply they type. Off by default. */
+export const REPLY_KEY = "lb_reply_translate_v1";
 
 export async function getToken(): Promise<string | null> {
   const result = await chrome.storage.local.get(TOKEN_KEY);

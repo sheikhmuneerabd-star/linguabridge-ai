@@ -1,4 +1,5 @@
 import { hash } from "../../core/hash";
+import { readDraft, writeDraft } from "../../core/input";
 import type { ChatMessage, PlatformAdapter, Sender } from "../../core/types";
 import { diagnoseFiverr } from "./diagnose";
 import { findTimestampLeaves, isVisible, textPieces } from "./dom";
@@ -91,9 +92,34 @@ export class FiverrAdapter implements PlatformAdapter {
 
   getDraftText(): string {
     const el = this.getInputElement();
-    if (!el) return "";
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) return el.value;
-    return (el.innerText ?? "").replace(/\u00a0/g, " ").trim();
+    return el ? readDraft(el) : "";
+  }
+
+  setDraftText(text: string): boolean {
+    const el = this.getInputElement();
+    if (!el) return false;
+    const ok = writeDraft(el, text);
+    if (ok) {
+      // Leave the cursor at the end so the user can keep typing.
+      el.focus();
+      if (el instanceof HTMLTextAreaElement) el.setSelectionRange(text.length, text.length);
+    }
+    return ok;
+  }
+
+  mountDraftUI(host: HTMLElement): void {
+    const input = this.getInputElement();
+    if (!input) return;
+
+    // Go up while the wrapper is the only child, so we end up next to the whole message box
+    // and not inside it.
+    let anchor: HTMLElement = input.parentElement ?? input;
+    for (let i = 0; i < 8; i++) {
+      const parent = anchor.parentElement;
+      if (!parent || parent === document.body || parent.children.length > 1) break;
+      anchor = parent;
+    }
+    if (anchor.previousElementSibling !== host) anchor.insertAdjacentElement("beforebegin", host);
   }
 
   /** The other person's display name from the chat header (it can differ from the URL name). */
@@ -149,27 +175,27 @@ export class FiverrAdapter implements PlatformAdapter {
     return messages;
   }
 
-      mountInlineUI(message: ChatMessage, host: HTMLElement): void {
-      const part = message.element.querySelector<HTMLElement>(MESSAGE_PART);
+  mountInlineUI(message: ChatMessage, host: HTMLElement): void {
+    const part = message.element.querySelector<HTMLElement>(MESSAGE_PART);
 
-      // Fiverr lays out the children of ".message-content" side by side. Its first child is the
-      // text column (name/time on top, message text below), so we go one level deeper and add
-      // our box at the end of that column. That puts it under the text.
-      const column = part
-        ? Array.from(part.children).find((c): c is HTMLElement => c instanceof HTMLElement && !c.hasAttribute("data-lb"))
-        : undefined;
+    // Fiverr lays out the children of ".message-content" side by side. Its first child is the
+    // text column (name/time on top, message text below), so we go one level deeper and add
+    // our box at the end of that column. That puts it under the text.
+    const column = part
+      ? Array.from(part.children).find((c): c is HTMLElement => c instanceof HTMLElement && !c.hasAttribute("data-lb"))
+      : undefined;
 
-      const parent = column ?? part;
-      if (parent) {
-        if (parent.lastElementChild !== host) parent.appendChild(host);
-        return;
-      }
-
-      // Fallback: right after the message block.
-      if (host.previousElementSibling !== message.element) {
-        message.element.insertAdjacentElement("afterend", host);
-      }
+    const parent = column ?? part;
+    if (parent) {
+      if (parent.lastElementChild !== host) parent.appendChild(host);
+      return;
     }
+
+    // Fallback: right after the message block.
+    if (host.previousElementSibling !== message.element) {
+      message.element.insertAdjacentElement("afterend", host);
+    }
+  }
 
   diagnose(): string {
     return diagnoseFiverr(this);

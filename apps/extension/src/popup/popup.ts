@@ -1,7 +1,7 @@
 import { LANGUAGES, TONES, getLanguageName, type Tone } from "@linguabridge/shared";
 import { ExtError, send } from "../shared/client";
 import type { MeData } from "../shared/messages";
-import { CONSENT_KEY } from "../shared/storage";
+import { CONSENT_KEY, REPLY_KEY } from "../shared/storage";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -180,14 +180,19 @@ $<HTMLFormElement>("setupForm").addEventListener("submit", async (e) => {
 
 $("cancelSetup").addEventListener("click", () => renderSignedIn());
 
-// ---------- Translation switch ----------
-async function loadSwitch() {
-  const stored = await chrome.storage.local.get(CONSENT_KEY);
+// ---------- Translation switches ----------
+async function loadSwitches() {
+  const stored = await chrome.storage.local.get([CONSENT_KEY, REPLY_KEY]);
   $<HTMLInputElement>("autoOn").checked = stored[CONSENT_KEY] === true;
+  $<HTMLInputElement>("replyOn").checked = stored[REPLY_KEY] === true;
 }
 
 $<HTMLInputElement>("autoOn").addEventListener("change", async (e) => {
   await chrome.storage.local.set({ [CONSENT_KEY]: (e.target as HTMLInputElement).checked });
+});
+
+$<HTMLInputElement>("replyOn").addEventListener("change", async (e) => {
+  await chrome.storage.local.set({ [REPLY_KEY]: (e.target as HTMLInputElement).checked });
 });
 
 // ---------- Signed in ----------
@@ -198,7 +203,7 @@ function renderSignedIn() {
   $("sumDisplay").textContent = getLanguageName(me.preferences.displayLanguage);
   $("sumWriting").textContent = getLanguageName(me.preferences.writingLanguage);
   $("sumTone").textContent = TONE_LABELS[me.preferences.tone];
-  void loadSwitch();
+  void loadSwitches();
   show("signedIn");
 }
 

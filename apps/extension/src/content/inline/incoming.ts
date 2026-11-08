@@ -15,7 +15,7 @@ const ITEM_ONLY_ERRORS = new Set(["AI_BAD_FORMAT", "AI_EMPTY", "VALIDATION_ERROR
 
 type Outcome =
   | { kind: "show"; from: string; text: string }
-  | { kind: "skip" } // already in the user's language, or nothing to translate
+  | { kind: "skip"; lang: string } // already in the user's language, or nothing to translate
   | { kind: "note"; message: string };
 
 interface Item {
@@ -70,6 +70,18 @@ export class IncomingTranslator {
   onSnapshot(snapshot: Snapshot): void {
     this.snapshot = snapshot;
     this.refresh();
+  }
+
+    /** Language of the most recent client message we could identify (null if none yet). */
+  clientLanguage(): string | null {
+    let best: { index: number; lang: string } | null = null;
+    for (const [id, outcome] of this.outcomes) {
+      const lang = outcome.kind === "show" ? outcome.from : outcome.kind === "skip" ? outcome.lang : undefined;
+      if (!lang || lang === "und") continue;
+      const index = this.order.get(id) ?? -1;
+      if (!best || index > best.index) best = { index, lang };
+    }
+    return best?.lang ?? null;
   }
 
   // ---------- settings ----------
@@ -235,7 +247,7 @@ export class IncomingTranslator {
       const outcome: Outcome =
         r.needsTranslation && r.translation
           ? { kind: "show", from: r.detectedLang, text: r.translation }
-          : { kind: "skip" };
+          : { kind: "skip", lang: r.detectedLang };
       this.outcomes.set(item.id, outcome);
       this.applyOutcome(item, outcome);
     } catch (err) {
