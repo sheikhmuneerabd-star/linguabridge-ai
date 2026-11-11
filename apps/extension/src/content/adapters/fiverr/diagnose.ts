@@ -52,12 +52,15 @@ export function diagnoseFiverr(adapter: PlatformAdapter): string {
     );
   });
 
+    const scanStart = performance.now();
   const messages = adapter.getMessages();
+  const scanMs = Math.round(performance.now() - scanStart);
   const count = (s: string) => messages.filter((m) => m.sender === s).length;
   lines.push(
     "",
     `parsed messages: ${messages.length} (client ${count("client")}, me ${count("me")}, unknown ${count("unknown")})`
   );
+  lines.push(`scan time: ${scanMs} ms (the page has ${document.getElementsByTagName("*").length} elements)`);
   if (messages[0]) lines.push(`message block element: ${describe(messages[0].element)}`);
 
   // Compact list: sender and size of every message (so we can see grouping patterns).

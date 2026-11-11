@@ -15,3 +15,18 @@ export const aiRateLimit = rateLimit({
     },
   },
 });
+
+/** Analysis uses far more AI than a translation, so it has its own, stricter limit. */
+export const analyzeRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (_req, res) => `analyze:${res.locals.userId}`,
+  message: {
+    error: {
+      code: "RATE_LIMITED",
+      message: "You are analyzing very fast. Please wait a moment and try again.",
+    },
+  },
+});

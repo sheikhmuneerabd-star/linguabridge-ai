@@ -18,6 +18,8 @@ export interface CompletionRequest {
   temperature?: number;
   /** Lets the caller cancel (e.g. user kept typing). */
   signal?: AbortSignal;
+  /** How much the model may think first (only used by models that support it). Default "low". */
+  reasoning?: "low" | "medium" | "high";
 }
 
 export interface CompletionResult {

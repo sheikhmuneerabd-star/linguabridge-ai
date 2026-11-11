@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "ai:check": "tsx src/scripts/aiCheck.ts",
     "translate:check": "tsx src/scripts/translateCheck.ts",
-    "test": "tsx --test src/tests/unit.test.ts",
+    "test": "tsx --test src/tests/unit.test.ts src/tests/checks.test.ts",
+    "assist:check": "tsx src/scripts/assistCheck.ts",
     "translate:matrix": "tsx src/scripts/translateMatrix.ts"
   },
   "dependencies": {

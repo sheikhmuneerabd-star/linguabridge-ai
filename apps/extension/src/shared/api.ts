@@ -13,11 +13,11 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(path: string, init: RequestInit = {}, timeoutMs = 30_000): Promise<T> {
   const token = await getToken();
 
-  // Always time out after 30 seconds; also stop early if the caller cancels.
-  const timeout = AbortSignal.timeout(30_000);
+  // Time out after timeoutMs; also stop early if the caller cancels.
+  const timeout = AbortSignal.timeout(timeoutMs);
   const signal = init.signal ? AbortSignal.any([timeout, init.signal]) : timeout;
 
   let res: Response;

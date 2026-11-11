@@ -8,6 +8,8 @@ import { authRouter } from "./routes/auth";
 import { usersRouter } from "./routes/users";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 import { translateRouter } from "./routes/translate";
+import { profileRouter } from "./routes/profile";
+import { assistRouter } from "./routes/assist";
 
 export function createApp() {
   const app = express();
@@ -56,6 +58,8 @@ export function createApp() {
   app.use("/auth", authLimiter, authRouter);
   app.use("/users", usersRouter);
   app.use("/translate", translateRouter);
+  app.use("/profile", profileRouter);
+  app.use("/assist", assistRouter);
 
   app.use(notFound);
   app.use(errorHandler);

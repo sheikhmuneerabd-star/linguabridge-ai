@@ -101,7 +101,7 @@ export class OutgoingTranslator {
   }
 
   /** The extension was reloaded or removed while this page stayed open. */
-  private shutdown(): void {
+  shutdown(): void {
     this.dead = true;
     this.enabled = false;
     this.clearAll();
@@ -271,6 +271,41 @@ export class OutgoingTranslator {
     this.applied = null;
     this.lastDraft = "";
     this.input = null;
+  }
+
+    /**
+   * Writes text sent by the side panel into the message box. It never presses Send.
+   * With `expect` (used by Undo) nothing is written unless the box still holds exactly that text.
+   */
+  writeFromPanel(
+    text: string,
+    expect?: string
+  ): { ok: boolean; before: string; reason?: "NO_INPUT" | "CHANGED" | "FAILED" } {
+    const el = this.findInput();
+    if (!el) return { ok: false, before: "", reason: "NO_INPUT" };
+
+    const before = readDraft(el);
+    if (expect !== undefined && norm(before) !== norm(expect)) {
+      return { ok: false, before, reason: "CHANGED" };
+    }
+
+    this.cancelPending();
+    this.writing = true; // our own input event must not be treated as the user typing
+    let ok = false;
+    try {
+      ok = this.adapter.setDraftText(text);
+      if (!ok) this.adapter.setDraftText(before); // put the user's own text back
+    } finally {
+      this.writing = false;
+    }
+
+    this.destroyStrip();
+    this.result = null;
+    this.original = null;
+    this.applied = null;
+    this.lastDraft = readDraft(el);
+
+    return ok ? { ok: true, before } : { ok: false, before, reason: "FAILED" };
   }
 
   // ---------- buttons ----------

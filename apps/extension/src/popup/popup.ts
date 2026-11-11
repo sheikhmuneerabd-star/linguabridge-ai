@@ -1,7 +1,7 @@
 import { LANGUAGES, TONES, getLanguageName, type Tone } from "@linguabridge/shared";
 import { ExtError, send } from "../shared/client";
 import type { MeData } from "../shared/messages";
-import { CONSENT_KEY, REPLY_KEY } from "../shared/storage";
+import { ANALYZE_KEY, CONSENT_KEY, REPLY_KEY } from "../shared/storage";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -182,9 +182,10 @@ $("cancelSetup").addEventListener("click", () => renderSignedIn());
 
 // ---------- Translation switches ----------
 async function loadSwitches() {
-  const stored = await chrome.storage.local.get([CONSENT_KEY, REPLY_KEY]);
+  const stored = await chrome.storage.local.get([CONSENT_KEY, REPLY_KEY, ANALYZE_KEY]);
   $<HTMLInputElement>("autoOn").checked = stored[CONSENT_KEY] === true;
   $<HTMLInputElement>("replyOn").checked = stored[REPLY_KEY] === true;
+  $<HTMLInputElement>("analyzeSwitch").checked = stored[ANALYZE_KEY] === true;
 }
 
 $<HTMLInputElement>("autoOn").addEventListener("change", async (e) => {
@@ -193,6 +194,10 @@ $<HTMLInputElement>("autoOn").addEventListener("change", async (e) => {
 
 $<HTMLInputElement>("replyOn").addEventListener("change", async (e) => {
   await chrome.storage.local.set({ [REPLY_KEY]: (e.target as HTMLInputElement).checked });
+});
+
+$<HTMLInputElement>("analyzeSwitch").addEventListener("change", async (e) => {
+  await chrome.storage.local.set({ [ANALYZE_KEY]: (e.target as HTMLInputElement).checked });
 });
 
 // ---------- Signed in ----------

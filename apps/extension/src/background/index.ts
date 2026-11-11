@@ -1,7 +1,12 @@
-import type { AuthResponse, Preferences } from "@linguabridge/shared";
+import {
+  analyzeRequestSchema,
+  type AnalyzeResponse,
+  type AuthResponse,
+  type Preferences,
+} from "@linguabridge/shared";
 import { ApiError, apiFetch } from "../shared/api";
 import type { MeData, RequestMessage, Reply } from "../shared/messages";
-import { PREFS_TS_KEY, clearToken, getToken, setToken } from "../shared/storage";
+import { ANALYZE_KEY, PREFS_TS_KEY, clearToken, getToken, setToken } from "../shared/storage";
 import { getGoogleIdToken } from "./googleSignIn";
 import { clearTranslationCache, translateIncoming, translateOutgoing } from "./translate";
 
@@ -103,6 +108,33 @@ async function handle(msg: RequestMessage): Promise<unknown> {
       return withRequest(msg.requestId, (signal) =>
         translateOutgoing(msg.text, msg.targetLanguage, signal)
       );
+
+    case "ANALYZE": {
+      // The rule that matters: without the user's switch, nothing leaves the browser.
+      const stored = await chrome.storage.local.get(ANALYZE_KEY);
+      if (stored[ANALYZE_KEY] !== true) {
+        throw new ApiError(
+          "CONSENT_REQUIRED",
+          'Analysis is turned off. Turn on "Analyze chats with AI" in the LinguaBridge popup.',
+          0
+        );
+      }
+      const parsed = analyzeRequestSchema.safeParse({ messages: msg.messages, fresh: msg.fresh === true });
+      if (!parsed.success) {
+        throw new ApiError(
+          "VALIDATION_ERROR",
+          "This chat cannot be analyzed yet. It needs at least one message from the client.",
+          0
+        );
+      }
+      return withRequest(msg.requestId, (signal) =>
+        apiFetch<AnalyzeResponse>(
+          "/assist/analyze",
+          { method: "POST", body: JSON.stringify(parsed.data), signal },
+          60_000
+        )
+      );
+    }
 
     case "CANCEL":
       inFlight.get(msg.requestId)?.abort();

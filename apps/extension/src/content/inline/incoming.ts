@@ -9,6 +9,10 @@ const MAX_PARALLEL = 2;
 const MAX_CHARS = 4000;
 const SETTINGS_RETRY_MS = 20_000;
 const MAX_SETTINGS_RETRIES = 5;
+/** After opening another chat, wait for the page to finish loading it before translating. */
+const QUIET_MS = 800;
+/** The newest identified client messages that decide which language the client uses. */
+const LANG_SAMPLE = 8;
 
 /** Errors that belong to one message only; everything else means "stop and let the user retry". */
 const ITEM_ONLY_ERRORS = new Set(["AI_BAD_FORMAT", "AI_EMPTY", "VALIDATION_ERROR"]);
@@ -36,6 +40,8 @@ export class IncomingTranslator {
 
   private snapshot: Snapshot | null = null;
   private conversationId: string | null = null;
+  private quietUntil = 0;
+  private quietTimer: number | undefined;
 
   private items = new Map<string, Item>();
   private outcomes = new Map<string, Outcome>();
@@ -72,16 +78,32 @@ export class IncomingTranslator {
     this.refresh();
   }
 
-    /** Language of the most recent client message we could identify (null if none yet). */
+  /**
+   * The language the client writes in, judged from the newest client messages we have identified.
+   * The most common one wins; on a tie the newer one wins. Null if nothing is known yet.
+   */
   clientLanguage(): string | null {
-    let best: { index: number; lang: string } | null = null;
+    const known: { index: number; lang: string }[] = [];
     for (const [id, outcome] of this.outcomes) {
-      const lang = outcome.kind === "show" ? outcome.from : outcome.kind === "skip" ? outcome.lang : undefined;
-      if (!lang || lang === "und") continue;
-      const index = this.order.get(id) ?? -1;
-      if (!best || index > best.index) best = { index, lang };
+      const lang = outcome.kind === "show" ? outcome.from : outcome.kind === "skip" ? outcome.lang : null;
+      if (lang && lang !== "und") known.push({ index: this.order.get(id) ?? -1, lang });
     }
-    return best?.lang ?? null;
+    if (known.length === 0) return null;
+
+    const recent = known.sort((a, b) => b.index - a.index).slice(0, LANG_SAMPLE);
+    const counts = new Map<string, number>();
+    for (const r of recent) counts.set(r.lang, (counts.get(r.lang) ?? 0) + 1);
+
+    let best = recent[0].lang;
+    let bestCount = 0;
+    for (const r of recent) {
+      const n = counts.get(r.lang) ?? 0;
+      if (n > bestCount) {
+        best = r.lang;
+        bestCount = n;
+      }
+    }
+    return best;
   }
 
   // ---------- settings ----------
@@ -117,12 +139,13 @@ export class IncomingTranslator {
   }
 
   /** The extension was reloaded or removed while this page stayed open. */
-  private shutdown(): void {
+  shutdown(): void {
     this.dead = true;
     this.enabled = false;
     this.reset();
     this.observer.disconnect();
     window.clearTimeout(this.settingsTimer);
+    window.clearTimeout(this.quietTimer);
   }
 
   // ---------- keeping the page in sync ----------
@@ -133,12 +156,17 @@ export class IncomingTranslator {
     if (s.conversationId !== this.conversationId) {
       this.reset();
       this.conversationId = s.conversationId;
+      // Give the page a moment to finish loading the new chat before we look at its messages.
+      this.quietUntil = Date.now() + QUIET_MS;
+      window.clearTimeout(this.quietTimer);
+      this.quietTimer = window.setTimeout(() => this.refresh(), QUIET_MS + 50);
     }
 
     if (!s.isChat || !this.enabled) {
       if (this.items.size > 0) this.reset();
       return;
     }
+    if (Date.now() < this.quietUntil) return;
 
     const clients = s.messages.filter((m) => m.sender === "client");
     this.order = new Map(s.messages.map((m, i) => [m.id, i]));
@@ -216,7 +244,15 @@ export class IncomingTranslator {
       }
       const id = this.queue.splice(best, 1)[0];
       const item = this.items.get(id);
-      if (item && item.status === "queued") void this.run(item);
+      if (!item || item.status !== "queued") continue;
+
+      // The user scrolled away while this was waiting: skip it. It joins the line again
+      // if the message comes back into view.
+      if (!this.visible.has(id)) {
+        item.status = "idle";
+        continue;
+      }
+      void this.run(item);
     }
   }
 

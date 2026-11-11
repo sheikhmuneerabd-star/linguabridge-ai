@@ -125,3 +125,22 @@ h2.spaced { margin-top: 18px; }
 .small { font-size: 12px; line-height: 1.4; }
 .card.compact { margin-top: 12px; padding: 10px; }
 .card.compact p { margin: 6px 0 0; }
+
+details.more { margin-top: 12px; }
+details.more > summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+
+.block { margin-top: 12px; }
+.block h3, #composer h3 { font-size: 14px; margin: 0 0 4px; }
+#composer { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+.callout {
+  margin: 10px 0; padding: 8px 10px; border-radius: 8px;
+  background: #f1f5f9; font-size: 14px; overflow-wrap: anywhere;
+}
+.callout.warn { background: #fffbeb; border: 1px solid #f59e0b; }
+.callout strong { display: block; margin-bottom: 4px; }
+
+ul.plain { margin: 4px 0 0; padding-left: 18px; }
+
+.reply { margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
+.reply-text { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }

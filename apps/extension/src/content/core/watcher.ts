@@ -1,3 +1,4 @@
+import { isAlive } from "./alive";
 import type { ChatMessage, PlatformAdapter } from "./types";
 
 export interface Snapshot {
@@ -8,7 +9,12 @@ export interface Snapshot {
 }
 
 const DEBOUNCE_MS = 300;
+/** Even if the page keeps changing, we read it at least this often. */
+const MAX_WAIT_MS = 1500;
 const URL_POLL_MS = 500;
+/** A slow, cheap safety net in case a change was missed. */
+const SAFETY_SCAN_MS = 5000;
+const SLOW_SCAN_MS = 150;
 
 /** Gives every page element a number, so we notice when the page re-creates a message. */
 const elementIds = new WeakMap<Element, number>();
@@ -42,10 +48,15 @@ export class ChatWatcher {
   private urlTimer: number | undefined;
   private lastUrl = location.href;
   private lastKey = "";
+  private pendingSince = 0;
+  private lastScanAt = 0;
+  private stopped = false;
 
   constructor(
     private adapter: PlatformAdapter,
-    private onChange: (snapshot: Snapshot) => void
+    private onChange: (snapshot: Snapshot) => void,
+    /** Called once if the extension was reloaded while this page stayed open. */
+    private onDead?: () => void
   ) {}
 
   start(): void {
@@ -54,16 +65,23 @@ export class ChatWatcher {
 
     // Fiverr is a single-page app: the address changes without a page reload.
     this.urlTimer = window.setInterval(() => {
+      if (!isAlive()) {
+        this.stop();
+        this.onDead?.();
+        return;
+      }
       if (location.href !== this.lastUrl) {
         this.lastUrl = location.href;
         this.schedule();
       }
       // If the page replaced the element we were watching, watch the new one.
       if (this.observedRoot && !this.observedRoot.isConnected) this.attach();
+      if (Date.now() - this.lastScanAt > SAFETY_SCAN_MS) this.scan();
     }, URL_POLL_MS);
   }
 
   stop(): void {
+    this.stopped = true;
     this.observer?.disconnect();
     window.clearTimeout(this.debounceTimer);
     window.clearInterval(this.urlTimer);
@@ -84,16 +102,30 @@ export class ChatWatcher {
   }
 
   private schedule(): void {
+    const now = Date.now();
+    if (this.pendingSince === 0) this.pendingSince = now;
     window.clearTimeout(this.debounceTimer);
-    this.debounceTimer = window.setTimeout(() => this.scan(), DEBOUNCE_MS);
+    // A page that never stops changing must not postpone reading forever.
+    const wait = now - this.pendingSince >= MAX_WAIT_MS ? 0 : DEBOUNCE_MS;
+    this.debounceTimer = window.setTimeout(() => this.scan(), wait);
   }
 
   private scan(): void {
+    if (this.stopped) return;
+    this.pendingSince = 0;
+    this.lastScanAt = Date.now();
+
     try {
+      const started = performance.now();
       const isChat = this.adapter.isChatPage();
       const messages: ChatMessage[] = isChat ? this.adapter.getMessages() : [];
       const conversationId = isChat ? this.adapter.getConversationId() : null;
       const hasInput = isChat && this.adapter.getInputElement() !== null;
+
+      const took = Math.round(performance.now() - started);
+      if (took > SLOW_SCAN_MS) {
+        console.warn(`[LinguaBridge] reading the page took ${took} ms (${messages.length} messages)`);
+      }
 
       // Only report when something really changed (including a message element being re-created).
       const key = [

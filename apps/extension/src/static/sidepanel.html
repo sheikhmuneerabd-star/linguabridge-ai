@@ -23,36 +23,84 @@
       <p id="setupNote" class="muted" hidden>Please finish setup: click the LinguaBridge icon in the toolbar.</p>
     </section>
 
-    <section id="tools" class="card" hidden>
-      <h2>Translate a client message</h2>
-      <p class="muted">Text you enter here is sent to our server for translation.</p>
-      <label for="inText">Paste the message</label>
-      <textarea id="inText" class="input" rows="3" maxlength="4000"></textarea>
-      <button id="inBtn" class="primary">Translate to my language</button>
-      <p id="inStatus" class="muted" hidden></p>
-      <p id="inOut" class="result" hidden></p>
+    <!-- Analyze this chat -->
+    <section id="analyze" class="card" hidden>
+      <h2>Analyze this chat</h2>
 
-      <h2 class="spaced">Translate my reply</h2>
-      <label for="outLang">Client's language</label>
-      <select id="outLang"></select>
-      <label for="outText">Write your reply</label>
-      <textarea id="outText" class="input" rows="3" maxlength="4000"></textarea>
-      <p id="outStatus" class="muted" hidden></p>
-      <p id="outOut" class="result" hidden></p>
-      <button id="outCopy" hidden>Copy translation</button>
-    </section>
-
-    <section class="card">
-      <h2>Fiverr check</h2>
-      <p class="muted">
-        Open a Fiverr chat, then press the button. The report shows the page structure only. It does not contain
-        any message text.
+      <p id="analyzeOff" class="muted" hidden>
+        Analysis is turned off. Click the LinguaBridge icon in the toolbar, read the note under
+        "Analyze chats with AI", and turn it on if you agree.
       </p>
-      <button id="diagnoseBtn">Check Fiverr page</button>
-      <p id="diagStatus" class="muted" hidden></p>
-      <textarea id="diagOut" class="report" rows="12" readonly hidden></textarea>
-      <button id="copyDiag" hidden>Copy report</button>
+
+      <div id="analyzeReady" hidden>
+        <p class="muted small">
+          Open a Fiverr chat, then press the button. If you just received new messages, refresh the Fiverr page
+          first so they are in the right order.
+        </p>
+        <button id="analyzeBtn" class="primary">Analyze this chat</button>
+        <p id="analyzeStatus" class="muted" role="status" hidden></p>
+      </div>
+
+      <div id="results" hidden></div>
+
+      <div id="composer" hidden>
+        <h3>Your reply</h3>
+        <p class="muted small">Edit it if you like. It is written in <span id="writeLangName"></span>.</p>
+        <textarea id="draftText" class="input" rows="5" maxlength="4000" aria-label="Your reply"></textarea>
+        <p id="draftWarn" class="error" role="alert" hidden></p>
+
+        <label for="clientLang">Client's language <span id="langHint" class="muted small"></span></label>
+        <select id="clientLang"></select>
+
+        <button id="prepareBtn" class="primary">Translate for the client</button>
+        <p id="prepareStatus" class="muted" role="status" hidden></p>
+
+        <div id="finalBox" hidden>
+          <label for="finalText">Message for the client (you can still edit it)</label>
+          <textarea id="finalText" class="input" rows="5" maxlength="4000"></textarea>
+          <p id="finalWarn" class="error" role="alert" hidden></p>
+          <button id="applyBtn" class="primary">Apply to message box</button>
+          <button id="copyFinal">Copy</button>
+          <button id="undoApply" hidden>Undo</button>
+          <p id="applyStatus" class="muted" role="status" hidden></p>
+        </div>
+      </div>
     </section>
+
+    <details class="more">
+      <summary>Extra tools</summary>
+
+      <section id="tools" class="card" hidden>
+        <h2>Translate a client message</h2>
+        <p class="muted">Text you enter here is sent to our server for translation.</p>
+        <label for="inText">Paste the message</label>
+        <textarea id="inText" class="input" rows="3" maxlength="4000"></textarea>
+        <button id="inBtn" class="primary">Translate to my language</button>
+        <p id="inStatus" class="muted" hidden></p>
+        <p id="inOut" class="result" hidden></p>
+
+        <h2 class="spaced">Translate my reply</h2>
+        <label for="outLang">Client's language</label>
+        <select id="outLang"></select>
+        <label for="outText">Write your reply</label>
+        <textarea id="outText" class="input" rows="3" maxlength="4000"></textarea>
+        <p id="outStatus" class="muted" hidden></p>
+        <p id="outOut" class="result" hidden></p>
+        <button id="outCopy" hidden>Copy translation</button>
+      </section>
+
+      <section class="card">
+        <h2>Fiverr check</h2>
+        <p class="muted">
+          Open a Fiverr chat, then press the button. The report shows the page structure only. It does not
+          contain any message text.
+        </p>
+        <button id="diagnoseBtn">Check Fiverr page</button>
+        <p id="diagStatus" class="muted" hidden></p>
+        <textarea id="diagOut" class="report" rows="12" readonly hidden></textarea>
+        <button id="copyDiag" hidden>Copy report</button>
+      </section>
+    </details>
 
     <footer>
       <span id="dot" class="dot" aria-hidden="true"></span>

@@ -7,6 +7,7 @@ import { api, ApiError, clearToken, getToken, setToken } from "@/lib/api";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { EmailAuthForm, type EmailAuthValues } from "@/components/EmailAuthForm";
+import Link from "next/link";
 
 interface MeResponse {
   user: PublicUser;
@@ -169,6 +170,12 @@ export default function HomePage() {
                 >
                   Change settings
                 </button>
+                <Link
+                  href="/profile"
+                  className="rounded-lg border border-slate-300 px-4 py-2 hover:bg-slate-100"
+                >
+                  Freelancer profile
+                </Link>
                 <button onClick={signOut} className="rounded-lg px-4 py-2 text-slate-600 hover:bg-slate-100">
                   Sign out
                 </button>

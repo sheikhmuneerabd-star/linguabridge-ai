@@ -32,7 +32,7 @@ export class GroqProvider implements AIProvider {
     };
     if (req.json) body.response_format = { type: "json_object" };
     // gpt-oss models can "think" first; for translation we want it quick.
-    if (model.startsWith("openai/gpt-oss")) body.reasoning_effort = "low";
+    if (model.startsWith("openai/gpt-oss")) body.reasoning_effort = req.reasoning ?? "low";
 
     const res = await this.send(body, req.signal);
     const data = (await res.json().catch(() => ({}))) as GroqResponse;
@@ -97,7 +97,7 @@ export class GroqProvider implements AIProvider {
         throw new AppError(
           429,
           "AI_BUSY",
-          `Translation is busy right now. Please try again in about ${wait} seconds.`
+          `The AI is busy right now. Please try again in about ${wait} seconds.`
         );
       }
 
