@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { profileSchema } from "@linguabridge/shared";
-import { checkReplies } from "../services/replyChecks";
+import { checkReplies, numbersNotIn } from "../services/replyChecks";
 import { tidy } from "../services/assist";
 
 const profile = profileSchema.parse({
@@ -118,4 +118,9 @@ test("offers of referrals are flagged", () => {
 test("tidy separates a number from the word stuck to it, but not ordinary units", () => {
   assert.equal(tidy("usually 5 to7 days"), "usually 5 to 7 days");
   assert.equal(tidy("on the 5th, at 2pm, 10k users, 100mb"), "on the 5th, at 2pm, 10k users, 100mb");
+});
+
+test("numbersNotIn finds numbers that the source does not contain", () => {
+  assert.deepEqual(numbersNotIn("Budget 120 and 5 days", "budget is $120"), ["5"]);
+  assert.deepEqual(numbersNotIn("Budget 1,500", "I can pay 1500"), []);
 });

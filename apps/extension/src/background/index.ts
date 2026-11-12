@@ -1,8 +1,12 @@
 import {
   analyzeRequestSchema,
+  objectionRequestSchema,
+  summaryRequestSchema,
   type AnalyzeResponse,
   type AuthResponse,
+  type ObjectionResponse,
   type Preferences,
+  type SummaryResponse,
 } from "@linguabridge/shared";
 import { ApiError, apiFetch } from "../shared/api";
 import type { MeData, RequestMessage, Reply } from "../shared/messages";
@@ -32,6 +36,25 @@ async function startSession(token: string): Promise<void> {
   await setToken(token);
   await clearTranslationCache();
 }
+
+/** The rule that matters: without the user's switch, no chat leaves the browser. */
+async function requireAnalyzeConsent(): Promise<void> {
+  const stored = await chrome.storage.local.get(ANALYZE_KEY);
+  if (stored[ANALYZE_KEY] !== true) {
+    throw new ApiError(
+      "CONSENT_REQUIRED",
+      'Analysis is turned off. Turn on "Analyze chats with AI" in the LinguaBridge popup.',
+      0
+    );
+  }
+}
+
+const CHAT_NOT_READY = () =>
+  new ApiError(
+    "VALIDATION_ERROR",
+    "This chat cannot be analyzed yet. It needs at least one message from the client.",
+    0
+  );
 
 async function handle(msg: RequestMessage): Promise<unknown> {
   switch (msg.type) {
@@ -110,26 +133,42 @@ async function handle(msg: RequestMessage): Promise<unknown> {
       );
 
     case "ANALYZE": {
-      // The rule that matters: without the user's switch, nothing leaves the browser.
-      const stored = await chrome.storage.local.get(ANALYZE_KEY);
-      if (stored[ANALYZE_KEY] !== true) {
-        throw new ApiError(
-          "CONSENT_REQUIRED",
-          'Analysis is turned off. Turn on "Analyze chats with AI" in the LinguaBridge popup.',
-          0
-        );
-      }
+      await requireAnalyzeConsent();
       const parsed = analyzeRequestSchema.safeParse({ messages: msg.messages, fresh: msg.fresh === true });
-      if (!parsed.success) {
-        throw new ApiError(
-          "VALIDATION_ERROR",
-          "This chat cannot be analyzed yet. It needs at least one message from the client.",
-          0
-        );
-      }
+      if (!parsed.success) throw CHAT_NOT_READY();
       return withRequest(msg.requestId, (signal) =>
         apiFetch<AnalyzeResponse>(
           "/assist/analyze",
+          { method: "POST", body: JSON.stringify(parsed.data), signal },
+          60_000
+        )
+      );
+    }
+
+    case "OBJECTION": {
+      await requireAnalyzeConsent();
+      const parsed = objectionRequestSchema.safeParse({
+        messages: msg.messages,
+        objection: msg.objection,
+        fresh: msg.fresh === true,
+      });
+      if (!parsed.success) throw CHAT_NOT_READY();
+      return withRequest(msg.requestId, (signal) =>
+        apiFetch<ObjectionResponse>(
+          "/assist/objection",
+          { method: "POST", body: JSON.stringify(parsed.data), signal },
+          60_000
+        )
+      );
+    }
+
+    case "SUMMARY": {
+      await requireAnalyzeConsent();
+      const parsed = summaryRequestSchema.safeParse({ messages: msg.messages, fresh: msg.fresh === true });
+      if (!parsed.success) throw CHAT_NOT_READY();
+      return withRequest(msg.requestId, (signal) =>
+        apiFetch<SummaryResponse>(
+          "/assist/summary",
           { method: "POST", body: JSON.stringify(parsed.data), signal },
           60_000
         )

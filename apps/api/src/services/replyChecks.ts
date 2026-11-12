@@ -219,3 +219,9 @@ export function checkReplies(
 
   return [...flags.values()];
 }
+
+/** Numbers that appear in `text` but not in `source`. Used to check a summary against its chat. */
+export function numbersNotIn(text: string, source: string): string[] {
+  const allowed = new Set(numbersIn(source));
+  return [...new Set(numbersIn(text).filter((n) => !allowed.has(n)))];
+}

@@ -144,3 +144,12 @@ ul.plain { margin: 4px 0 0; padding-left: 18px; }
 
 .reply { margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
 .reply-text { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.objection-row { margin: 6px 0 12px; }
+.objection-row p { margin: 0 0 4px; overflow-wrap: anywhere; }
+
+#objectionOut, #summaryOut {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}

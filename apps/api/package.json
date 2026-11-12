@@ -11,7 +11,8 @@
     "translate:check": "tsx src/scripts/translateCheck.ts",
     "test": "tsx --test src/tests/unit.test.ts src/tests/checks.test.ts",
     "assist:check": "tsx src/scripts/assistCheck.ts",
-    "translate:matrix": "tsx src/scripts/translateMatrix.ts"
+    "translate:matrix": "tsx src/scripts/translateMatrix.ts",
+    "objection:check": "tsx src/scripts/objectionCheck.ts"
   },
   "dependencies": {
     "@linguabridge/shared": "*",

@@ -7,6 +7,7 @@ import {
 import { ExtError, send } from "../shared/client";
 import type { ChatPayload, MeData, TabReply, TabRequest } from "../shared/messages";
 import { ANALYZE_KEY, PREFS_TS_KEY, TOKEN_KEY } from "../shared/storage";
+import { objectionButton, resetExtras, runSummary } from "./extras";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -119,6 +120,7 @@ function resetAnalysis() {
     analysisId = null;
   }
   cancelPrepare();
+  resetExtras();
   session = null;
   applied = null;
   $("results").replaceChildren();
@@ -181,6 +183,17 @@ async function analyze(fresh: boolean) {
   }
 }
 
+function objectionBlock(items: string[], chat: ChatPayload): HTMLElement {
+  const b = make("div", "block");
+  b.append(make("h3", undefined, "Concerns or objections"));
+  for (const item of items) {
+    const row = make("div", "objection-row");
+    row.append(make("p", undefined, item), objectionButton(item, chat, { openComposer }));
+    b.append(row);
+  }
+  return b;
+}
+
 function renderResults(r: AnalyzeResponse, chat: ChatPayload) {
   const box = $("results");
   box.replaceChildren();
@@ -220,13 +233,13 @@ function renderResults(r: AnalyzeResponse, chat: ChatPayload) {
 
   box.append(block(`Where this chat stands: ${STAGE_LABELS[r.stage]}`, r.intent));
   box.append(block("Suggested approach", r.strategy));
+  if (r.objections.length > 0) box.append(objectionBlock(r.objections, chat));
 
   const more = make("details", "more");
   more.append(make("summary", undefined, "More details"));
   if (r.requirements.length > 0) more.append(block("What the client asked for", listOf(r.requirements)));
   if (r.budget) more.append(block("Budget", r.budget));
   if (r.deadline) more.append(block("Deadline", r.deadline));
-  if (r.objections.length > 0) more.append(block("Concerns or objections", listOf(r.objections)));
   if (r.missingInfo.length > 0) more.append(block("Things you could still ask", listOf(r.missingInfo)));
   box.append(more);
 
@@ -411,6 +424,41 @@ async function undoApply() {
 }
 
 $("analyzeBtn").addEventListener("click", () => void analyze(false));
+let summarizing = false;
+
+async function summarize(fresh: boolean) {
+  if (summarizing) return;
+  summarizing = true;
+  $<HTMLButtonElement>("summaryBtn").disabled = true;
+  setLine("summaryStatus", "Reading the chat...");
+
+  try {
+    const tab = await activeTab();
+    if (!tab || tab.id === undefined) {
+      setLine("summaryStatus", "Could not find the current tab.");
+      return;
+    }
+
+    const reply = await askTab(tab.id, { type: "GET_CHAT" });
+    if (!reply) {
+      setLine("summaryStatus", "Open a Fiverr chat, refresh the page once, and try again.");
+      return;
+    }
+    if (!reply.ok || reply.kind !== "chat") {
+      setLine("summaryStatus", (!reply.ok && CHAT_PROBLEMS[reply.code]) || "Could not read the chat. Please try again.");
+      return;
+    }
+
+    await runSummary(reply.chat, fresh, () => void summarize(true));
+  } catch (err) {
+    setLine("summaryStatus", friendly(err));
+  } finally {
+    summarizing = false;
+    $<HTMLButtonElement>("summaryBtn").disabled = false;
+  }
+}
+
+$("summaryBtn").addEventListener("click", () => void summarize(false));
 $("prepareBtn").addEventListener("click", () => void prepare());
 $("applyBtn").addEventListener("click", () => void applyFinal());
 $("undoApply").addEventListener("click", () => void undoApply());

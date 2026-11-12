@@ -1,7 +1,9 @@
 import type {
   AnalyzeResponse,
+  ObjectionResponse,
   Preferences,
   PublicUser,
+  SummaryResponse,
   TranslateIncomingResponse,
   TranslateOutgoingResponse,
 } from "@linguabridge/shared";
@@ -26,6 +28,8 @@ export type RequestMessage =
   | { type: "TRANSLATE_INCOMING"; text: string; requestId: string }
   | { type: "TRANSLATE_OUTGOING"; text: string; targetLanguage: string; requestId: string }
   | { type: "ANALYZE"; messages: ChatLine[]; fresh?: boolean; requestId: string }
+  | { type: "OBJECTION"; messages: ChatLine[]; objection: string; fresh?: boolean; requestId: string }
+  | { type: "SUMMARY"; messages: ChatLine[]; fresh?: boolean; requestId: string }
   | { type: "CANCEL"; requestId: string };
 
 export interface MeData {
@@ -46,6 +50,8 @@ export interface ResponseMap {
   TRANSLATE_INCOMING: TranslateIncomingResponse & { cached: boolean };
   TRANSLATE_OUTGOING: TranslateOutgoingResponse & { cached: boolean };
   ANALYZE: AnalyzeResponse;
+  OBJECTION: ObjectionResponse;
+  SUMMARY: SummaryResponse;
   CANCEL: Record<string, never>;
 }
 

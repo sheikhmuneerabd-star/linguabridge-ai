@@ -34,14 +34,21 @@
 
       <div id="analyzeReady" hidden>
         <p class="muted small">
-          Open a Fiverr chat, then press the button. If you just received new messages, refresh the Fiverr page
+          Open a Fiverr chat, then press a button. If you just received new messages, refresh the Fiverr page
           first so they are in the right order.
         </p>
         <button id="analyzeBtn" class="primary">Analyze this chat</button>
         <p id="analyzeStatus" class="muted" role="status" hidden></p>
+
+        <button id="summaryBtn">Summarize this chat</button>
+        <p class="muted small">Useful for long chats. The chat is sent to the AI, like Analyze.</p>
+        <p id="summaryStatus" class="muted" role="status" hidden></p>
+        <div id="summaryOut" hidden></div>
       </div>
 
       <div id="results" hidden></div>
+      <p id="objectionStatus" class="muted" role="status" hidden></p>
+      <div id="objectionOut" hidden></div>
 
       <div id="composer" hidden>
         <h3>Your reply</h3>

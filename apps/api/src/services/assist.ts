@@ -75,13 +75,13 @@ export function getLastRaw(): string {
   return lastRaw;
 }
 
-const text = (max: number) =>
+export const text = (max: number) =>
   z
     .string()
     .nullish()
     .transform((v) => tidy(v ?? "").trim().slice(0, max));
 
-const list = (count: number, max: number) =>
+export const list = (count: number, max: number) =>
   z
     .array(z.string())
     .nullish()
@@ -114,7 +114,7 @@ const outputSchema = z
     message: "A reply is empty",
   });
 
-function parseJson(raw: string): unknown {
+export function parseJson(raw: string): unknown {
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/```\s*$/, "")
