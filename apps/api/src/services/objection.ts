@@ -13,7 +13,7 @@ import { cachedRun, hashKey } from "./assistCache";
 import { checkReplies } from "./replyChecks";
 
 /** Bump this whenever the objection prompt changes, so old saved answers are not reused. */
-const PROMPT_VERSION = 1;
+const PROMPT_VERSION = 2;
 
 const outputSchema = z
   .object({

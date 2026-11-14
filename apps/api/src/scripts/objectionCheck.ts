@@ -131,6 +131,9 @@ function common(r: ObjectionResult): string[] {
   }
   if (/assalam|wa\s?-?alaikum|walaikum/i.test(r.reply)) p.push("religious greeting nobody used");
   if (r.needsYourInput.some((x) => /^\[ADD:/i.test(x))) p.push("placeholder inside needsYourInput");
+  if (/\[[^\]]+\]/.test(r.reply) && !r.flags.some((f) => f.code === "placeholder")) {
+    p.push("bracketed text in the reply was not flagged as a placeholder");
+  }
   return p;
 }
 

@@ -12,7 +12,8 @@ const URL_ANY = /https?:\/\/[^\s)>\]"']+/gi;
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /\+?\d[\d\s().-]{7,}\d/g;
 const PLATFORMS = /\b(whatsapp|telegram|skype|discord|paypal|payoneer|western union)\b/i;
-const PLACEHOLDER = /\[ADD:[^\]]*\]/i;
+// Any bracket that starts with "add": [ADD: x], [Add your link], [add]. Not "[address]".
+const PLACEHOLDER = /\[\s*add\b[^\]]*\]/i;
 // Religious greetings ("Assalam o Alaikum", "Waalaikum salam").
 const RELIGIOUS_GREETING = /\b(?:assalam\w*|asalam\w*|salaam|salam|wa-?alaikum|waalaikum|walaikum)\b/i;
 const GREETING_IN_CHAT = /salam|alaikum/i;

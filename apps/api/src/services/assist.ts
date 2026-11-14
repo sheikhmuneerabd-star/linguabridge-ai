@@ -15,7 +15,7 @@ import { checkReplies } from "./replyChecks";
 import { assertUnderDailyLimit, recordUsage } from "./usage";
 
 /** Bump this whenever the analysis prompt changes, so old saved answers are not reused. */
-const PROMPT_VERSION = 7;
+const PROMPT_VERSION = 8;
 
 export interface AnalyzePrefs {
   displayLanguage: string;

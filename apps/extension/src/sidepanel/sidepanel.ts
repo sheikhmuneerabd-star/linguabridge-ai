@@ -57,7 +57,7 @@ async function askTab(tabId: number, message: TabRequest): Promise<TabReply | un
 // =====================================================================================
 // Analyze this chat
 // =====================================================================================
-const PLACEHOLDER = /\[ADD:[^\]]*\]/i;
+const PLACEHOLDER = /\[\s*add\b[^\]]*\]/i;
 
 const STAGE_LABELS: Record<Stage, string> = {
   inquiry: "new inquiry",

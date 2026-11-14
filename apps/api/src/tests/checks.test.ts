@@ -124,3 +124,10 @@ test("numbersNotIn finds numbers that the source does not contain", () => {
   assert.deepEqual(numbersNotIn("Budget 120 and 5 days", "budget is $120"), ["5"]);
   assert.deepEqual(numbersNotIn("Budget 1,500", "I can pay 1500"), []);
 });
+
+test("any bracketed 'add' placeholder is flagged", () => {
+  assert.ok(codes("Here is my work: [Add your portfolio link]").includes("placeholder"));
+  assert.ok(codes("[ADD: link]").includes("placeholder"));
+  assert.ok(codes("Please see [add your link here]").includes("placeholder"));
+  assert.ok(!codes("Please check the [address] field.").includes("placeholder"));
+});
